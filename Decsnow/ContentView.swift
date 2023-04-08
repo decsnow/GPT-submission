@@ -17,7 +17,7 @@ struct ContentView: View {
                 .frame(height: 100)
                 .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.black, lineWidth: 1)
+                        .stroke(Color.blue, lineWidth: 1)
                         )
             Button("GPT train data submission") {
                 sendRequest(requestStr: requestText)
