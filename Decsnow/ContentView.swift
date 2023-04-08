@@ -6,83 +6,72 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @State private var responseText: String = ""
+    @State var requestText: String = "input dialogues here"
+    
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        VStack {
+            TextEditor(text: $requestText)
+                .frame(height: 100)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.black, lineWidth: 1)
+                        )
+            Button("GPT train data submission") {
+                sendRequest(requestStr: requestText)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
+            .buttonStyle(CustomButtonStyle())
+            Text(responseText)
         }
+        .padding()
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+    
+    func sendRequest(requestStr: String) {
+        guard let url = URL(string: "https://api.decsnow.net/append-to-file") else {
+            print("Invalid URL")
+            return
+        }
+        guard let encodedRequestStr = requestStr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            print("Unable to encode request string")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let originalData = encodedRequestStr.data(using: .utf8)!
+        //_ = originalData.base64EncodedData()
+        request.httpBody = "data=\(originalData.base64EncodedString())".data(using: .utf8)!
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            guard let data = data, let response = response as? HTTPURLResponse, error == nil else {
+                print("Error: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            DispatchQueue.main.async {
+                responseText = "Response status code: \(response.statusCode)\n"
+                if let decodedData = Data(base64Encoded: data), let responseBody = String(data: decodedData, encoding: .utf8) {
+                    responseText += "Response body: \(responseBody)"
+                }
             }
         }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
+        task.resume()
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        ContentView()
+    }
+}
+
+struct CustomButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(10)
+            .background(Color.blue)
+            .foregroundColor(Color.white)
+            .cornerRadius(8)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }
