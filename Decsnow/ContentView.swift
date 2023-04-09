@@ -9,10 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var responseText: String = ""
-    @State var requestText: String = "input dialogues here"
+    @State var requestText: String = ""
+    @State var showAlert = false
     
     var body: some View {
         VStack {
+            HStack{
+                Image(systemName: "arrow.down.app")
+                Text("input dialogues in the text editor below")
+                Image(systemName: "arrow.down.app")
+            }
             TextEditor(text: $requestText)
                 .frame(height: 100)
                 .overlay(
@@ -23,6 +29,11 @@ struct ContentView: View {
                 sendRequest(requestStr: requestText)
             }
             .buttonStyle(CustomButtonStyle())
+            .alert(isPresented: $showAlert) {
+                        Alert(title: Text("Response"), message: Text("\(responseText)"), primaryButton: .destructive(Text("OK"), action: {
+                            // 执行删除操作
+                        }), secondaryButton: .cancel(Text("Cancel")))
+                    }
             Text(responseText)
         }
         .padding()
@@ -50,6 +61,7 @@ struct ContentView: View {
             }
             DispatchQueue.main.async {
                 responseText = "Response status code: \(response.statusCode)\n"
+                self.showAlert = true
                 if let decodedData = Data(base64Encoded: data), let responseBody = String(data: decodedData, encoding: .utf8) {
                     responseText += "Response body: \(responseBody)"
                 }
