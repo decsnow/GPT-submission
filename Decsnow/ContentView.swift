@@ -32,13 +32,14 @@ struct ContentView: View {
                                reqisEmpty = true
                                 showAlert = true
                 } else {
+                    reqisEmpty = false
                     // if is not empty send the request
                     sendRequest(requestStr: requestText)
                 }
             }
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
-                if responseText.isEmpty {
+                if reqisEmpty {
                     return Alert(title: Text("Error"), message: Text("Please input dialogues"), dismissButton: .default(Text("OK")))
                 } else {
                     return Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
