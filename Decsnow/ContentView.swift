@@ -10,8 +10,9 @@ import SwiftUI
 struct ContentView: View {
     @State private var responseText: String = ""
     @State var requestText: String = ""
-    @State var showAlert = false
+    @State var respAlert = false
     @State var reqisEmpty = false
+    @State var showAlert = false
     
     var body: some View {
         VStack {
@@ -29,6 +30,7 @@ struct ContentView: View {
             Button("GPT train data submission") {
                 if requestText.isEmpty {
                                reqisEmpty = true
+                                showAlert = true
                 } else {
                     // if is not empty send the request
                     sendRequest(requestStr: requestText)
@@ -36,10 +38,11 @@ struct ContentView: View {
             }
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
-                        Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
-                    }
-            .alert(isPresented: $reqisEmpty) {
-                Alert(title: Text("Error"), message: Text("Please fill in the dialogues"), dismissButton: .default(Text("OK")))
+                if responseText.isEmpty {
+                    return Alert(title: Text("Error"), message: Text("Failed to send request"), dismissButton: .default(Text("OK")))
+                } else {
+                    return Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
+                }
             }
             Text(responseText)
         }
@@ -68,6 +71,7 @@ struct ContentView: View {
             }
             DispatchQueue.main.async {
                 responseText = "Response status code: \(response.statusCode)\n"
+                self.respAlert = true
                 self.showAlert = true
                 if let decodedData = Data(base64Encoded: data), let responseBody = String(data: decodedData, encoding: .utf8) {
                     responseText += "Response body: \(responseBody)"
