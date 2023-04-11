@@ -13,6 +13,8 @@ struct ContentView: View {
     @State var respAlert = false
     @State var reqisEmpty = false
     @State var showAlert = false
+    @State var isAnimation: Bool = false
+    @State var loading: Bool = false
     
     var body: some View {
         VStack {
@@ -34,6 +36,7 @@ struct ContentView: View {
                 } else {
                     reqisEmpty = false
                     // if is not empty send the request
+                    loading = true
                     sendRequest(requestStr: requestText)
                 }
             }
@@ -46,6 +49,12 @@ struct ContentView: View {
                 }
             }
             Text(responseText)
+            if loading{
+                musicLoading()
+                    .onAppear(){
+                        self.isAnimation.toggle()
+                    }
+            }
         }
         .padding()
     }
@@ -72,6 +81,7 @@ struct ContentView: View {
             }
             DispatchQueue.main.async {
                 responseText = "Response status code: \(response.statusCode)\n"
+                self.loading = false
                 self.respAlert = true
                 self.showAlert = true
                 if let decodedData = Data(base64Encoded: data), let responseBody = String(data: decodedData, encoding: .utf8) {
@@ -81,6 +91,21 @@ struct ContentView: View {
         }
         task.resume()
     }
+    // 音乐起伏加载
+func musicLoading() -> some View {
+    HStack(alignment: .center, spacing: 5) {
+        ForEach(0 ..< 5) { index in
+    Capsule(style: .continuous)
+                .fill(Color.green)
+                .frame(width: 10, height: 50)
+                .scaleEffect(isAnimation ? 0.5 : 1.0)
+                .animation(.easeInOut(duration: 0.5)
+                .repeatForever()
+                .delay(Double(index) * 0.1),value: isAnimation
+                )
+        }
+    }
+}
 }
 
 struct ContentView_Previews: PreviewProvider {
