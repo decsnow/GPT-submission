@@ -30,9 +30,7 @@ struct ContentView: View {
             }
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
-                        Alert(title: Text("Response"), message: Text("\(responseText)"), primaryButton: .destructive(Text("OK"), action: {
-                            // 执行删除操作
-                        }), secondaryButton: .cancel(Text("Cancel")))
+                        Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
                     }
             Text(responseText)
         }
