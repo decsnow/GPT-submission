@@ -39,7 +39,7 @@ struct ContentView: View {
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
                 if responseText.isEmpty {
-                    return Alert(title: Text("Error"), message: Text("Failed to send request"), dismissButton: .default(Text("OK")))
+                    return Alert(title: Text("Error"), message: Text("Please input dialogues"), dismissButton: .default(Text("OK")))
                 } else {
                     return Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
                 }
