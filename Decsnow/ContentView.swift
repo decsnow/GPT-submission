@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var responseText: String = ""
     @State var requestText: String = ""
     @State var showAlert = false
+    @State var reqisEmpty = false
     
     var body: some View {
         VStack {
@@ -26,12 +27,20 @@ struct ContentView: View {
                         .stroke(Color.blue, lineWidth: 1)
                         )
             Button("GPT train data submission") {
-                sendRequest(requestStr: requestText)
+                if requestText.isEmpty {
+                               reqisEmpty = true
+                } else {
+                    // if is not empty send the request
+                    sendRequest(requestStr: requestText)
+                }
             }
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
                         Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
                     }
+            .alert(isPresented: $reqisEmpty) {
+                Alert(title: Text("Error"), message: Text("Please fill in the dialogues"), dismissButton: .default(Text("OK")))
+            }
             Text(responseText)
         }
         .padding()
