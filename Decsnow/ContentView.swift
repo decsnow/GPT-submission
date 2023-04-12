@@ -30,7 +30,7 @@ struct ContentView: View {
                         .stroke(Color.blue, lineWidth: 1)
                         )
             Button("GPT train data submission") {
-                if requestText.isEmpty {
+                if requestText.countOccurrences(of:"\\n") < 1 {
                                reqisEmpty = true
                                 showAlert = true
                 } else {
@@ -43,7 +43,7 @@ struct ContentView: View {
             .buttonStyle(CustomButtonStyle())
             .alert(isPresented: $showAlert) {
                 if reqisEmpty {
-                    return Alert(title: Text("Error"), message: Text("Please input dialogues"), dismissButton: .default(Text("OK")))
+                    return Alert(title: Text("Error"), message: Text("Please input dialogues \n(at least two lines)"), dismissButton: .default(Text("OK")))
                 } else {
                     return Alert(title: Text("Response"), message: Text("\(responseText)"), dismissButton: .default(Text("Got it!")))
                 }
@@ -122,5 +122,11 @@ struct CustomButtonStyle: ButtonStyle {
             .foregroundColor(Color.white)
             .cornerRadius(8)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+    }
+}
+extension String {
+    func countOccurrences(of stringToFind: String) -> Int {
+        let regex = try! NSRegularExpression(pattern: stringToFind, options: [])
+        return regex.numberOfMatches(in: self, options: [], range: NSRange(location: 0, length: utf16.count))
     }
 }
