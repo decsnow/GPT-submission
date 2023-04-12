@@ -36,6 +36,7 @@ struct ContentView: View {
                 } else {
                     reqisEmpty = false
                     // if is not empty send the request
+                    responseText = ""
                     loading = true
                     sendRequest(requestStr: requestText)
                 }
